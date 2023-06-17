@@ -1,0 +1,544 @@
+<template>
+	<view>
+		<map id="map" ref="map" style="width: 100%; height: 800px" :longitude="longitude" :latitude="latitude"
+			:markers="markers" :scale="scale" :show-location="true" :enable-rotate="enableRotate"
+			:enable-traffic="showTraffic" :enable-satellite="mapType == 1" :show-compass="showCompass"
+			:enable-poi="showPoi" @tap="addMarker" @markertap="onMarkerTap" @regionchange="mapMove">
+
+			<image class="traffic-btn" src="/static/traffic.png" @click="toggleTrafficLayer"></image>
+			<image class="satelite-btn" src="/static/satelite.png" @click="toggleSatelliteMap"></image>
+			<image class="poi-btn" src="/static/card1.png" @click="togglePoi"></image>
+			<image class="compass-btn" src="/static/nan.png" @click="toggleCompass"></image>
+			<image class="delete-btn" src="/static/reload.png" @click="refreshMapMarker"></image>
+
+			<image class="add-btn" src="/static/plus.png" @click="toggleAdd"></image>
+			<image class="sub-btn" src="/static/reduce.png" @click="toggleSub"></image>
+
+			<image class="me-btn" src="/static/location12.png" @click="toggleMe"></image>
+
+			<image class="task-btn" src="/static/place.png" @click="deleteMarkers"></image>
+			<image class="area-btn" src="/static/field.png" @click="toggleArea"></image>
+
+		</map>
+		<!-- <view class="area-list" v-if="showArea">
+		    <view class="area-item" v-for="(item, index) in areaList" :key="index">
+		        <text>{{ item.name }}</text>
+		        <text>{{ item.address }}</text>
+		    </view>
+		</view> -->
+
+		<!-- 定位点信息 -->
+		<u-popup :show="showMarkerInfo" mode="bottom" closeable="true" :round="20" @close="closeMarkerInfo"
+			@open="openMarkerInfo">
+			<view class="marker-info">
+				<view class="marker-info-address">
+					<u-text>{{this.markerInfo.markerAddress}}</u-text>
+				</view>
+				<view>
+					<view v-if="markerInfo.taskName" class="marker-info-task">
+						<u-text style="color: #256699; position: absolute; left: 20px; top: 30px; font-size: 15px;"
+							@click="getTask">查看执勤任务</u-text>
+						<u-text style="color: #992025; position: absolute; right: 0px; top: 30px; font-size: 15px;"
+							@click="deleteTask">删除执勤任务</u-text>
+					</view>
+					<view v-else class="marker-info-task">
+						<u-text style="color: #259966; position: absolute; left: 20px; top: 30px; font-size: 15px;"
+							@click="insertTask">创建执勤任务</u-text>
+					</view>
+				</view>
+			</view>
+		</u-popup>
+
+		<!-- 多边形区域信息 -->
+		<u-popup :show="showArea" mode="center" :round="10" @close="closeArea" @open="openArea">
+			<view class="u-page area-list">
+				<u-list @scrolltolower="scrolltolower">
+					<u-list-item v-for="(item, index) in indexList" :key="index">
+						<u-cell :title="item.item.username" @click="areaLink(item)">
+							<u-avatar slot="icon" shape="square" size="35" :src="item.item.url"
+								customStyle="margin: -3px 5px -3px 0"></u-avatar>
+						</u-cell>
+					</u-list-item>
+				</u-list>
+			</view>
+		</u-popup>
+	</view>
+</template>
+
+<script>
+	var map;
+
+	export default {
+		created() {
+			map = uni.createMapContext('map', this);
+		},
+		onLoad(options) {
+			console.log('%%%%%%%%%%%%%')
+			console.log(options)
+			if (options.taskInfo) {
+				this.taskInfo = JSON.parse(options.taskInfo)
+			}
+		},
+		onShow() {
+			this.loadMarkers();
+		},
+		mounted() {
+			uni.getLocation({
+				type: 'gcj02',
+				success: (res) => {
+					this.longitude = res.longitude
+					this.latitude = res.latitude
+				},
+				fail: () => {
+					uni.showToast({
+						title: '获取位置失败',
+						icon: 'none'
+					})
+				}
+			})
+			setTimeout(() => {
+				if (this.taskInfo) {
+					map.moveToLocation({
+						longitude: this.taskInfo.longitude,
+						latitude: this.taskInfo.latitude
+					});
+					this.taskInfo = null
+				}
+			}, 700);
+		},
+
+		data() {
+			return {
+				longitude: 0, // 地图中心点经度
+				latitude: 0, // 地图中心点纬度
+				scale: 16, // 地图缩放
+				markers: [], // 地图标记点
+				mapType: 0, // 地图类型
+				showTraffic: true, // 是否显示实时路况
+				showPoi: true, // 是否显示路标
+				showCompass: false, // 是否显示指南针
+				enableRotate: false, // 是否允许旋转
+				showArea: false, // 是否显示区域列表
+				showTask: false, // 是否显示任务列表
+				areaList: [], // 区域数据集合
+
+				markerInfo: [], // 标记详细信息
+				showMarkerInfo: false, // 是否显示标记信息
+
+				taskInfo: null, // 保存跳转传递过来的taskInfo对象
+
+				indexList: [],
+				urls: [
+					'https://cdn.uviewui.com/uview/album/1.jpg',
+					'https://cdn.uviewui.com/uview/album/2.jpg',
+					'https://cdn.uviewui.com/uview/album/3.jpg',
+					'https://cdn.uviewui.com/uview/album/4.jpg',
+					'https://cdn.uviewui.com/uview/album/5.jpg',
+					'https://cdn.uviewui.com/uview/album/6.jpg',
+					'https://cdn.uviewui.com/uview/album/7.jpg',
+					'https://cdn.uviewui.com/uview/album/8.jpg',
+					'https://cdn.uviewui.com/uview/album/9.jpg',
+					'https://cdn.uviewui.com/uview/album/10.jpg'
+				]
+			}
+		},
+
+		methods: {
+			mapMove() {},
+			toggleTrafficLayer() {
+				this.showTraffic = !this.showTraffic;
+			},
+			toggleSatelliteMap() {
+				if (this.mapType != 1) {
+					this.mapType = 1;
+				} else {
+					this.mapType = 0;
+				}
+			},
+			togglePoi() {
+				this.showPoi = !this.showPoi;
+			},
+			toggleCompass() {
+				this.showCompass = !this.showCompass;
+				this.enableRotate = !this.enableRotate;
+			},
+			toggleAdd() {
+				this.scale += 1
+			},
+			toggleSub() {
+				this.scale -= 1
+			},
+			toggleMe() {
+				this.$refs.map.moveToLocation();
+			},
+			// todo区域列表
+			toggleArea() {
+				this.showArea = !this.showArea;
+				console.log(this.showArea)
+			},
+			closeArea() {
+				this.showArea = false;
+				console.log('closeAreaList')
+				this.indexList = []
+			},
+			openArea() {
+				this.loadmore();
+				console.log('openAreaList')
+			},
+			toggleTask() {
+				this.showTask = !this.showTask;
+			},
+			scrolltolower() {
+				this.loadmore()
+			},
+			refreshMapMarker() {
+				this.deleteMarkers()
+				this.deleteMarkers()
+			},
+			loadmore() {
+				uni.request({
+					url: 'https://cn.archeruu.com/traffic//user/getUserList',
+					method: 'GET',
+					success: (res) => {
+						this.areaList = res.data.data
+						console.log(this.areaList)
+						for (let i = 0; i < this.areaList.length; i++) {
+							this.areaList[i].url = this.urls[uni.$u.random(0, this.urls.length - 1)];
+							console.log(this.areaList[i])
+							this.indexList.push({
+								item: this.areaList[i]
+							})
+						}
+						console.log(this.indexList)
+					},
+					fail: () => {
+						uni.showToast({
+							title: '获取数据失败',
+							icon: 'none'
+						})
+					}
+				})
+			},
+			areaLink(item) {
+				console.log(item)
+				this.closeArea()
+				this.$refs.map.moveToLocation({
+					longitude: 120,
+					latitude: 30,
+					// scale: 5,
+				});
+			},
+
+
+
+			// **********标记点点击**********
+			// 标记点点击事件
+			onMarkerTap(e) {
+				const markerId = e.detail.markerId;
+				this.markerInfo = this.markers.find(marker => marker.id === markerId);
+				console.log(this.markerInfo);
+				// 传递数据展示视图
+				this.showMarkerInfo = !this.showMarkerInfo
+			},
+			insertTask() {
+				console.log(this.markerInfo)
+				uni.navigateTo({
+					url: '/pages/listInfo/taskInfo?taskInfo=' + JSON.stringify(this.markerInfo)
+				})
+			},
+			getTask() {
+				uni.navigateTo({
+					url: '/pages/listInfo/taskInfo?taskInfo=' + JSON.stringify(this.markerInfo)
+				})
+			},
+			deleteTask() {
+				uni.request({
+					url: 'https://cn.archeruu.com/traffic/taskInfo/deleteTaskById',
+					method: 'GET',
+					data: {
+						id: this.markerInfo.id,
+					},
+					success: (res) => {
+						if (res.data.success) {
+							this.loadMarkers()
+							uni.showToast({
+								title: '删除成功',
+								icon: 'none'
+							})
+						} else {
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'none'
+							})
+						}
+					},
+					fail: () => {
+						uni.showToast({
+							title: '获取数据失败',
+							icon: 'none'
+						})
+					}
+				})
+			},
+			loadMarkers() {
+				// POST API
+				uni.request({
+					url: 'https://cn.archeruu.com/traffic/taskInfo/getTaskList',
+					method: 'GET',
+					success: (res) => {
+						if (res.data.success) {
+							console.log("加载标记点")
+							this.markers = res.data.data
+							this.markers.forEach(marker => {
+								marker.iconPath = '/static/location.png';
+								marker.width = 50;
+								marker.height = 50;
+							});
+						} else {
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'none'
+							})
+						}
+					},
+					fail: () => {
+						uni.showToast({
+							title: '获取数据失败',
+							icon: 'none'
+						})
+					}
+				})
+			},
+
+			// ###########标记点工具方法###########
+			addMarker(e) {
+				console.log("click map")
+				console.log("标记点初始信息", e)
+				const {
+					longitude,
+					latitude
+				} = e.detail
+				const geoInfoPromise = this.getAddress(longitude, latitude)
+				geoInfoPromise.then(geoInfo => {
+					const addressComponent = geoInfo.data.regeocode.addressComponent;
+					const address =
+						`${addressComponent.province}${addressComponent.city}${addressComponent.district}${addressComponent.streetNumber.street}${addressComponent.streetNumber.number}`;
+					console.log("逆地址具体地址", address)
+					this.markers.push({
+						id: this.generateMarkerId(longitude, latitude),
+						longitude,
+						latitude,
+						markerAddress: address,
+						iconPath: '/static/locationgreen.png',
+						width: 50,
+						height: 50,
+					})
+					console.log("所有的标记点", this.markers)
+					this.refreshMarkers()
+				}).catch(err => {
+					console.log(err)
+				})
+			},
+			// 通过经纬度逆地址解析
+			getAddress(longitude, latitude) {
+				return new Promise((resolve, reject) => {
+					uni.request({
+						url: 'https://restapi.amap.com/v3/geocode/regeo', //仅为示例，并非真实接口地址。
+						data: {
+							output: 'json',
+							location: `${longitude},${latitude}`,
+							key: '49bc5792511c9f4476ad9a4c343705f0',
+							extensions: 'base',
+							batch: false
+						},
+						success: (res) => {
+							console.log("通过经纬度逆地址解析", res);
+							resolve(res)
+						},
+						fail: (err) => {
+							reject(err)
+						}
+					});
+				})
+			},
+			// 刷新所有标记展示
+			refreshMarkers() {
+				// 先清除原有的标记点
+				this.$refs.map.removeMarkers();
+
+				// 将 markers 数组中的标记点添加到地图上
+				this.$refs.map.addMarkers({
+					markers: this.markers,
+					success: res => {
+						console.log("add markers success", res);
+					},
+					fail: err => {
+						console.error("add markers fail", err);
+					}
+				});
+			},
+			generateMarkerId(latitude, longitude) {
+				const str = `${latitude}-${longitude}`;
+				const hash = str.split('').reduce((acc, char) => {
+					acc = ((acc << 5) - acc) + char.charCodeAt(0);
+					return acc & acc;
+				}, 0);
+				return `marker-${hash}`;
+			},
+			deleteMarkers() {
+				console.log(this.markers)
+				if (this.markers.length === 0) {
+					// 从数据库刷新地图标记点
+					this.loadMarkers()
+				} else {
+					// 清空地图上的标记点
+					this.markers = []
+				};
+			},
+			// 打开关闭标记详情信息
+			closeMarkerInfo() {
+				this.showMarkerInfo = false;
+				console.log('closeMarkerInfo')
+			},
+			openMarkerInfo() {
+				console.log('openMarkerInfo')
+			},
+		}
+	}
+</script>
+
+<style>
+	.traffic-btn {
+		position: absolute;
+		right: 10px;
+		top: 100px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+	}
+
+	.satelite-btn {
+		position: absolute;
+		right: 10px;
+		top: 150px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+	}
+
+	.poi-btn {
+		position: absolute;
+		right: 10px;
+		top: 200px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+		opacity: 0.8;
+	}
+
+	.compass-btn {
+		position: absolute;
+		right: 10px;
+		top: 250px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+	}
+
+	.delete-btn {
+		position: absolute;
+		right: 12px;
+		top: 300px;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		opacity: 0.9;
+	}
+
+	.add-btn {
+		position: absolute;
+		left: 10px;
+		top: 100px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+		opacity: 0.7;
+	}
+
+	.sub-btn {
+		position: absolute;
+		left: 10px;
+		top: 150px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+		opacity: 0.9;
+	}
+
+	.me-btn {
+		position: absolute;
+		right: 10px;
+		bottom: 80px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+		opacity: 0.6;
+	}
+
+	.task-btn {
+		position: absolute;
+		left: 10px;
+		bottom: 130px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+		opacity: 0.6;
+	}
+
+	.area-btn {
+		position: absolute;
+		left: 10px;
+		bottom: 80px;
+		width: 35px;
+		height: 35x;
+		border-radius: 50%;
+		opacity: 0.6;
+	}
+
+	.marker-info {
+		height: 120px;
+		padding-right: 45px;
+	}
+
+	.marker-info-address {
+		position: relative;
+		top: 13px;
+		left: 17px;
+		font-size: 20px;
+		font-weight: bold;
+	}
+
+	.marker-info-task {
+		/* 		position: relative;
+		top: 35px;
+		left: 17px;
+		font-size: 15px; */
+		height: 100px;
+	}
+
+	.area-list-page {
+		opacity: 0.5;
+		background-color: #00CCCC;
+	}
+
+	.area-list {
+		width: 250px;
+		height: 500px;
+	}
+
+	.area-item {
+		padding: 20px;
+		background-color: #fff;
+		margin-bottom: 10px;
+	}
+</style>

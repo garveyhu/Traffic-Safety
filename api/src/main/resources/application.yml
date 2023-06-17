@@ -1,0 +1,18 @@
+server:
+  port: 4000
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: Archer
+    password: "030317"
+    url: jdbc:mysql://117.50.192.60:3306/traffic?useUnicode=true&charactorEncoding=utf8&&serverTimezone=Asia/Shanghai
+
+mybatis-plus:
+  global-config:
+    #字段策略 0:"忽略判断",1:"非 NULL 判断",2:"非空判断"
+    field-strategy: 0
+
+roll:
+  APPID: ohktquioyplidkhi
+  APPSECRET: UVpDd212b3o0dEFISnVWb3pPK0VmUT09

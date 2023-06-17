@@ -1,0 +1,11 @@
+### GET request with parameter
+GET https://www.mxnzp.com/api/news/types?app_id=ohktquioyplidkhi&app_secret=UVpDd212b3o0dEFISnVWb3pPK0VmUT09
+Accept: application/json
+
+### GET request with parameter
+GET https://www.mxnzp.com/api/news/list?typeId=521&page=1&app_id=ohktquioyplidkhi&app_secret=UVpDd212b3o0dEFISnVWb3pPK0VmUT09
+Accept: application/json
+
+### GET request with parameter
+GET https://www.mxnzp.com/api/news/details?newsId=I471RE94000189FH&app_id=ohktquioyplidkhi&app_secret=UVpDd212b3o0dEFISnVWb3pPK0VmUT09
+Accept: application/json

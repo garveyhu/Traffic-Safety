@@ -1,0 +1,154 @@
+{
+	"easycom": {
+		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+	},
+		
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/login/login",
+			"style": {
+				"app-plus": {  
+				    "titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/login/register",
+			"style": {
+				"app-plus": {  
+				    "titleNView": false
+				}
+			}
+		},
+	    {
+	    	"path": "pages/tabbar/map/map",
+	    	"style": {
+				
+	    		// "navigationBarTitleText": "首页",
+	    		// "navigationStyle": "custom",
+	    		// "enablePullDownRefresh": true,
+	    		"onReachBottomDistance": 50,
+	    		"app-plus": {
+	    			"titleNView": false //禁用原生导航栏
+	    		}
+	    	}
+	    },
+	    {
+	    	"path": "pages/tabbar/task/task",
+	    	"style": {
+	    		"navigationBarTitleText": "执勤任务",
+	    		// "navigationStyle": "custom",
+	    		"enablePullDownRefresh": true,
+	    		"onReachBottomDistance": 50
+	    		// "app-plus": {
+	    		// 	"titleNView": false //禁用原生导航栏
+	    		// }
+	    	}
+	    },
+	    {
+	    	"path": "pages/tabbar/area/area",
+	    	"style": {
+	    		"navigationBarTitleText": "新闻资讯",
+	    		// "navigationStyle": "custom",
+	    		"enablePullDownRefresh": true,
+	    		"onReachBottomDistance": 50
+	    	}
+	    },
+	    {
+	    	"path": "pages/tabbar/me/me",
+	    	"style": {
+	    		"navigationBarTitleText": "个人中心",
+				"navigationBarTextStyle": "white",
+	    		// "navigationStyle": "custom",
+	    		"enablePullDownRefresh": false,
+				"navigationBarBackgroundColor": "#4f99ff"
+	    	}
+	    },
+		{
+			"path": "pages/appInfo/about",
+			"style": {
+				"navigationBarTitleText": "关于",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/appInfo/feedback",
+			"style": {
+				"navigationBarTitleText": "反馈",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/editInfo/editInfo",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTitleText": "编辑资料",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/listInfo/taskInfo",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTitleText": "任务信息",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/listInfo/areaInfo",
+			"style": {
+				"app-plus": {
+					"titleNView": false //禁用原生导航栏
+				},
+				"navigationBarTitleText": "区域信息",
+				"enablePullDownRefresh": false
+			}
+		}
+    ],
+	"tabBar": {
+		"custom": false,
+		"color": "#101010",
+		"selectedColor": "#1296db",
+		"borderStyle": "black",
+		"fontSize": "15",
+		// "height": "55",
+		"backgroundColor": "#ffffff",
+		// "iconfontSrc": "./static/icon/iconfont.ttf",
+		"list": [{
+				"pagePath": "pages/tabbar/map/map",
+				"text": "首页"
+				// "iconPath": "static/我的.png",
+				// "selectedIconPath": "static/我的选中.png"
+			},{
+				"pagePath": "pages/tabbar/task/task",
+				"text": "任务"
+				// "iconPath": "static/我的.png",
+				// "selectedIconPath": "static/我的选中.png"
+			},{
+				"pagePath": "pages/tabbar/area/area",
+				"text": "资讯"
+				// "iconPath": "static/我的.png",
+				// "selectedIconPath": "static/我的选中.png"
+			},{
+				"pagePath": "pages/tabbar/me/me",
+				"text": "我的"
+				// "iconPath": "static/我的.png",
+				// "selectedIconPath": "static/我的选中.png"
+			}
+		]
+	},
+	"globalStyle": {
+		"backgroundColor": "#fff",
+		"backgroundTextStyle": "light",
+		"navigationBarBackgroundColor": "#fff",
+		"navigationBarTitleText": "traffic",
+		"enablePullDownRefresh": false,
+		"navigationBarTextStyle": "black",
+		"onReachBottomDistance": 50
+	},
+	"uniIdRouter": {}
+}
